@@ -45,6 +45,8 @@ map.addEventListener('zoomhome', () => {
   map.setView(playerMarker.getBounds().getCenter(), initialZoom);
 });
 
+const nearlyEqual = (v1, v2, epsilon = 0.001) => Math.abs(v1 - v2) <= epsilon;
+
 /////////////////////
 // settings
 
@@ -544,9 +546,13 @@ const locoShapeNoseDepth = 10;
 function createCarShape(carId, carData) {
   const isSpecial = carId.indexOf('-') > 0;
   const lengthPx = carData.length * svgPixelsPerMeter;
-  const svg = isSpecial
+  var svg = isSpecial
     ? `<polygon points="${-lengthPx/2},-${carWidthPx/2} ${-lengthPx/2},${carWidthPx/2} ${lengthPx/2-locoShapeNoseDepth},${carWidthPx/2} ${lengthPx/2},0 ${lengthPx/2-locoShapeNoseDepth},-${carWidthPx/2}" fill="goldenrod" fill-opacity="70%" stroke="black" stroke-width="1%"/>`
-    : `<rect x="${-lengthPx/2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
+    : `<rect x="${-lengthPx / 2}" y="-10" width="${lengthPx}" height="20" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
+  if (isSpecial && nearlyEqual(carData.speed, 0) && carId[0] == 'L') {
+    // Draw speed label for moving locos; exclude coal hopper and caboose
+    svg += `<polygon points="0,${-carWidthPx / 2} ${-carWidthPx / 2},${-carWidthPx / 2 - locoShapeNoseDepth} ${-carWidthPx / 2},${-carWidthPx / 2 - locoShapeNoseDepth - carWidthPx} ${carWidthPx / 2},${-carWidthPx / 2 - locoShapeNoseDepth - carWidthPx} ${carWidthPx / 2},${-carWidthPx / 2 - locoShapeNoseDepth} 0,${-carWidthPx / 2}" fill="lightyellow" fill-opacity="70%" stroke="black" stroke-width="1%"/>`;
+  }
   return svg;
 }
 
@@ -555,8 +561,14 @@ function createCarLabel(carId, carData) {
   const jobId = carJobIds.get(carId);
   const lengthPx = carData.length * svgPixelsPerMeter;
   const rotation = carData.rotation >= 180 ? 'rotate(180)' : '';
-  if (isSpecial)
-    return `<text transform="translate(-3 0) ${rotation}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
+  if (isSpecial) {
+    var text = `<text transform="translate(-3 0) ${rotation}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold">${carId}</text>`;
+    if (nearlyEqual(carData.speed, 0) || carId[0] != 'L') {
+      return text;
+    }
+    const speed = Math.round(carData.speed * 3.6); // m/s -> km/h
+    return text + `<text transform="translate(0 -30) ${rotation}" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="bold">${speed}</text>`;
+  }
   const jobIdLabel =
     !jobId ? ""
     : jobId.split('-').length == 3 ? jobId.slice(-5,-3) + jobId.slice(-2)
@@ -595,7 +607,7 @@ function getCarOverlayBounds(carData) {
   const position = carData.position;
   const length = metersToDegrees * carData.length;
   const width = metersToDegrees * carWidthMeters;
-  return [ [ position[0] - width/2, position[1] - length/2], [position[0] + width/2, position[1] + length/2] ];
+  return [ [ position[0] - width*2, position[1] - length/2], [position[0] + width*2, position[1] + length/2] ];
 }
 
 function createNewCar(carId, carData) {
