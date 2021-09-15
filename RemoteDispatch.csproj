@@ -31,6 +31,6 @@
     <EmbeddedResource Include="leaflet.rotatedImageOverlay.js" />
     <EmbeddedResource Include="main.js" />
     <EmbeddedResource Include="style.css" />
-    <EmbeddedResource Include="dvmap.png" />
+    <EmbeddedResource Include="map/*.png" />
   </ItemGroup>
 </Project>

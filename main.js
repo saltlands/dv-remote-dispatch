@@ -10,15 +10,13 @@ const mapBounds = [[0, 0], [0.15, 0.15]];
 const maxBounds = [[-0.02, -0.02], [0.17, 0.17]];
 const map = L.map('map', {
   minZoom: 13,
+  maxZoom: 21,
   maxBounds: maxBounds,
   tap: false,
   zoomControl: false,
+  layers: L.tileLayer("/map.{x},{y}.png", { tileSize: 1024, bounds: [[0, 0], [0.15, 0.15]], maxNativeZoom: 16}),
 })
 .fitBounds(mapBounds);
-
-const imgBounds = [[0, 0], [0.1475, 0.1475]];
-L.imageOverlay('dvmap.png', imgBounds).addTo(map);
-
 L.control.scale().addTo(map);
 const zoomHome = new L.Control.ZoomHome({
   position: 'topleft',
