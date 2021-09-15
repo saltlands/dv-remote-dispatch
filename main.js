@@ -179,6 +179,16 @@ function jobElems(jobId, jobData) {
     row.appendChild(jobIdCell);
     rows.push(row);
 
+    row = document.createElement('tr');
+    const jobPayoutCell = document.createElement('th');
+    jobPayoutCell.setAttribute('colspan', CarsPerRow);
+    jobPayoutCell.textContent = jobData.payment.toLocaleString();
+    if (jobData.bonusPayment) {
+        jobPayoutCell.textContent += ` (+${jobData.bonusPayment.toLocaleString()})`;
+    }
+    row.appendChild(jobPayoutCell);
+    rows.push(row);
+
     jobData.tasks.forEach(task => {
         row = document.createElement('tr');
         const startTrackCell = document.createElement('th');

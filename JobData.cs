@@ -85,7 +85,9 @@ namespace DvMod.RemoteDispatch
                 new JProperty("originYardId", job.chainData.chainOriginYardId),
                 new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
                 new JProperty("tasks", FlattenMany(job.GetJobData()).Select(TaskToJson)),
-                new JProperty("licenses", LicensesToJson(job.requiredLicenses))
+                new JProperty("licenses", LicensesToJson(job.requiredLicenses)),
+                new JProperty("payment", job.GetBasePaymentForTheJob()),
+                new JProperty("bonusPayment", job.GetBonusPaymentForTheJob())
             );
 
             // ensure cache is updated
