@@ -171,11 +171,15 @@ function jobElems(jobId, jobData) {
     jobIdCell.setAttribute('colspan', CarsPerRow);
     jobIdCell.classList.add(`jobList-jobHeader`);
     jobIdCell.style.background = colorForJobId(jobId);
-    jobIdCell.textContent = jobId;
+    jobIdCell.innerHTML = `<span>${jobId}</span>`;
+    for (var idx in jobData.licenses) {
+        var name = jobData.licenses[idx];
+        jobIdCell.innerHTML += ` <img src="licenses.${name}.png" alt="${name}" height=24 />`;
+    }
     row.appendChild(jobIdCell);
     rows.push(row);
 
-    jobData.forEach(task => {
+    jobData.tasks.forEach(task => {
         row = document.createElement('tr');
         const startTrackCell = document.createElement('th');
         startTrackCell.classList.add('interactive');
@@ -244,7 +248,7 @@ function updateJobList() {
     for (const elem of Array.from(jobListBody.childNodes))
         elem.remove();
     allJobData.forEach((jobData, jobId) => {
-        for (const elem of jobElems(jobId, jobData.tasks))
+        for (const elem of jobElems(jobId, jobData))
             jobListBody.appendChild(elem);
     });
 }

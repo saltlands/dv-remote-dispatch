@@ -2,6 +2,7 @@ using DV.Logic.Job;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -42,6 +43,21 @@ namespace DvMod.RemoteDispatch
             return job;
         }
 
+        // LicensesToJson converts the JobLicenses enum into a json array of the enum's names.
+        private static JArray LicensesToJson(JobLicenses data)
+        {
+            Type enumType = typeof(JobLicenses);
+            int license = (int)data;
+            JArray result = new JArray();
+            foreach (int val in Enum.GetValues(enumType)) {
+                if ((license & val) > 0)
+                {
+                    result.Add(Enum.GetName(enumType, val));
+                }
+            }
+            return result;
+        }
+
         public static Dictionary<string, JObject> GetAllJobData()
         {
             static IEnumerable<TaskData> FlattenToTransport(TaskData data)
@@ -68,13 +84,16 @@ namespace DvMod.RemoteDispatch
             static JObject JobToJson(Job job) => new JObject(
                 new JProperty("originYardId", job.chainData.chainOriginYardId),
                 new JProperty("destinationYardId", job.chainData.chainDestinationYardId),
-                new JProperty("tasks", FlattenMany(job.GetJobData()).Select(TaskToJson)));
+                new JProperty("tasks", FlattenMany(job.GetJobData()).Select(TaskToJson)),
+                new JProperty("licenses", LicensesToJson(job.requiredLicenses))
+            );
 
             // ensure cache is updated
             JobForId("");
             return jobForId.ToDictionary(
                 kvp => kvp.Key,
-                kvp => JobToJson(kvp.Value));
+                kvp => JobToJson(kvp.Value)
+            );
         }
 
         public static string GetAllJobDataJson()

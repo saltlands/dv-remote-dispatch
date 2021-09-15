@@ -32,5 +32,6 @@
     <EmbeddedResource Include="main.js" />
     <EmbeddedResource Include="style.css" />
     <EmbeddedResource Include="map/*.png" />
+    <EmbeddedResource Include="licenses/*.png" />
   </ItemGroup>
 </Project>
