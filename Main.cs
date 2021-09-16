@@ -28,6 +28,7 @@ namespace DvMod.RemoteDispatch
             mod.OnGUI = OnGUI;
             mod.OnSaveGUI = OnSaveGUI;
             mod.OnToggle = OnToggle;
+            mod.OnUnload = OnUnload;
 
             return true;
         }
@@ -60,6 +61,11 @@ namespace DvMod.RemoteDispatch
                 harmony.UnpatchAll(modEntry.Info.Id);
             }
             return true;
+        }
+
+        private static bool OnUnload(UnityModManager.ModEntry modEntry)
+        {
+            return OnToggle(modEntry, false);
         }
 
         public static void DebugLog(TrainCar car, Func<string> message)
