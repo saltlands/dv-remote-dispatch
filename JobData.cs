@@ -87,7 +87,10 @@ namespace DvMod.RemoteDispatch
                 new JProperty("tasks", FlattenMany(job.GetJobData()).Select(TaskToJson)),
                 new JProperty("licenses", LicensesToJson(job.requiredLicenses)),
                 new JProperty("payment", job.GetBasePaymentForTheJob()),
-                new JProperty("bonusPayment", job.GetBonusPaymentForTheJob())
+                new JProperty("bonusPayment", job.GetBonusPaymentForTheJob()),
+                new JProperty("bonusTime", job.TimeLimit),
+                new JProperty("startTime", job.startTime),
+                new JProperty("elapsedTime", job.GetTimeOnJob())
             );
 
             // ensure cache is updated
@@ -118,6 +121,15 @@ namespace DvMod.RemoteDispatch
                             jobIdForCar[car] = jobId;
                         Sessions.AddTag("jobs");
                     }
+                }
+            }
+
+            [HarmonyPatch(typeof(JobBooklet), nameof(JobBooklet.Awake))]
+            public static class UpdateJobBooklet
+            {
+                public static void Postfix(JobBooklet __instance)
+                {
+                    Sessions.AddTag("jobs");
                 }
             }
         }

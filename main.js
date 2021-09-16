@@ -1,4 +1,4 @@
-const initialZoom = 20;
+﻿const initialZoom = 20;
 const earthCircumference = 40e6;
 const metersToDegrees = 360 / earthCircumference;
 
@@ -44,6 +44,18 @@ map.addEventListener('zoomhome', () => {
 });
 
 const nearlyEqual = (v1, v2, epsilon = 0.001) => Math.abs(v1 - v2) <= epsilon;
+
+const formatTime = function (seconds) {
+    let time = "";
+    if (seconds > 3600) {
+        time = Math.floor(seconds / 3600) + ":";
+    }
+    let m = Math.floor((seconds % 3600) / 60);
+    time += (m < 10 ? `0${m}` : m) + ":";
+    let s = Math.floor(seconds % 60);
+    time += (s < 10 ? `0${s}` : s);
+    return time;
+}
 
 /////////////////////
 // settings
@@ -171,9 +183,10 @@ function jobElems(jobId, jobData) {
     jobIdCell.setAttribute('colspan', CarsPerRow);
     jobIdCell.classList.add(`jobList-jobHeader`);
     jobIdCell.style.background = colorForJobId(jobId);
-    jobIdCell.innerHTML = `<span>${jobId}</span>`;
+    let jobClass = jobData.startTime ? 'jobTaken' : '';
+    jobIdCell.innerHTML = `<span class="${jobClass}">${jobId}</span>`;
     for (var idx in jobData.licenses) {
-        var name = jobData.licenses[idx];
+        let name = jobData.licenses[idx];
         jobIdCell.innerHTML += ` <img src="licenses.${name}.png" alt="${name}" height=24 />`;
     }
     row.appendChild(jobIdCell);
@@ -182,9 +195,13 @@ function jobElems(jobId, jobData) {
     row = document.createElement('tr');
     const jobPayoutCell = document.createElement('th');
     jobPayoutCell.setAttribute('colspan', CarsPerRow);
-    jobPayoutCell.textContent = jobData.payment.toLocaleString();
-    if (jobData.bonusPayment) {
-        jobPayoutCell.textContent += ` (+${jobData.bonusPayment.toLocaleString()})`;
+    jobPayoutCell.innerHTML = `$${jobData.payment.toLocaleString()}`;
+    if (jobData.startTime) {
+        let remain = jobData.bonusTime - jobData.elapsedTime - (jobData.localTime ? ((new Date()).getTime()/1000) - jobData.localTime : 0);
+        jobPayoutCell.innerHTML += ` ${remain > 0 ? "⏱ "+formatTime(remain) : "(no bonus)"}`;
+        if (jobData.bonusPayment && remain > 0) {
+            jobPayoutCell.innerHTML += ` (+$${jobData.bonusPayment.toLocaleString()})`;
+        }
     }
     row.appendChild(jobPayoutCell);
     rows.push(row);
@@ -268,6 +285,23 @@ function updateAllJobs(jobs) {
     Object.entries(jobs).forEach(([jobId, jobData]) => allJobData.set(jobId, jobData));
     updateJobList();
     updateCarJobs();
+}
+
+function refreshJobTimers() {
+    let active = false;
+    allJobData.forEach((jobData, jobId) => {
+        if (jobData.startTime) {
+            active = true;
+            // Snapshot the time we loaded this job from the server, so we can
+            // reduce the local view of the remaining time without drift.
+            if (!jobData.localTime) {
+                jobData.localTime = (new Date()).getTime()/1000;
+            }
+        }
+    });
+    if (active) {
+        updateJobList();
+    }
 }
 
 /////////////////////
@@ -715,6 +749,7 @@ function updateLoop() {
         setTimeout(() => ws.send('poll'), timeToNextUpdate);
     });
     ws.addEventListener('open', _ => ws.send('poll'));
+    setInterval(refreshJobTimers, 1000);
 }
 
 junctionsReady.then(_ => {

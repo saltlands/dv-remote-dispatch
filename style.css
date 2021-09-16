@@ -1,4 +1,4 @@
-th[role=columnheader]:not(.no-sort) {
+﻿th[role=columnheader]:not(.no-sort) {
   cursor: pointer;
 }
 th[role=columnheader]:not(.no-sort):after {
@@ -143,4 +143,7 @@ body {
     margin-top: -3px;
     margin-bottom: -3px;
     background-color: lightgray;
+}
+.jobList-jobHeader .jobTaken::before {
+    content: "📋";
 }
