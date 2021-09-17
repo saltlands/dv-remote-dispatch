@@ -76,7 +76,7 @@ table tbody:first-child tr:first-child td {
 }
 
 .leaflet-sidebar.collapsed {
-  max-height: 120px;
+  max-height: 160px;
 }
 .leaflet-sidebar {
   max-height: 100%;
@@ -146,4 +146,18 @@ body {
 }
 .jobList-jobHeader .jobTaken::before {
     content: "📋";
+}
+
+#filterBody label {
+    vertical-align: bottom;
+    font-weight: bold;
+}
+.license-active {
+    width: 32px;
+    height: 32px;
+}
+.license-inactive {
+    width: 32px;
+    height: 32px;
+    filter: grayscale(1) contrast(.75) brightness(2) blur(.5px);
 }

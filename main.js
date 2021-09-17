@@ -177,6 +177,14 @@ function yardIdForTrack(trackId) {
 function jobElems(jobId, jobData) {
     const rows = [];
 
+    if (onlyActiveLicenses.checked) {
+        for (var idx in jobData.licenses) {
+            if (!playerLicenses.get(jobData.licenses[idx])) {
+                return rows;
+            }
+        }
+    }
+
     let row = document.createElement('tr');
     const jobIdCell = document.createElement('th');
     jobIdCell.setAttribute('id', `jobList-${jobId}`);
@@ -187,7 +195,7 @@ function jobElems(jobId, jobData) {
     jobIdCell.innerHTML = `<span class="${jobClass}">${jobId}</span>`;
     for (var idx in jobData.licenses) {
         let name = jobData.licenses[idx];
-        jobIdCell.innerHTML += ` <img src="licenses.${name}.png" alt="${name}" height=24 />`;
+        jobIdCell.innerHTML += ` <img src="licenses.${name}.png" title="${name}" height=24 />`;
     }
     row.appendChild(jobIdCell);
     rows.push(row);
@@ -302,6 +310,22 @@ function refreshJobTimers() {
     if (active) {
         updateJobList();
     }
+}
+
+/////////////////////
+// filters
+
+const playerLicenses = new Map();
+
+const onlyActiveLicenses = document.getElementById('onlyActiveLicenses');
+const licenseList = document.getElementById('licenseList');
+const destinationList = document.getElementById('destinationList');
+const jobTypeList = document.getElementById('jobTypeList');
+
+function updateFilterList() {
+    let licenses = new Array();
+    playerLicenses.forEach((active, license) => licenses.push(`<img src="licenses.${license}.png" class="${active ? "license-active" : "license-inactive"}" />`));
+    licenseList.innerHTML = licenses.join(" ");
 }
 
 /////////////////////
@@ -531,9 +555,17 @@ function createPlayerMarker(playerData) {
     playerMarker = L.svgOverlay(
         createPlayerOverlay(),
         getPlayerOverlayBounds(playerData.position),
-        { interactive: true, bubblingMouseEvents: false })
+        { interactive: true, bubblingMouseEvents: false }
+    )
         .addEventListener('click', e => setMarkerToFollow(e.target))
         .addTo(map);
+    if (playerData.licenses) {
+        playerLicenses.clear();
+        for (var license in playerData.licenses) {
+            playerLicenses.set(license, playerData.licenses[license]);
+        }
+        updateFilterList();
+    }
     updatePlayerOverlay(playerData);
 }
 
