@@ -54,18 +54,16 @@ namespace DvMod.RemoteDispatch
                     HttpServer.Create();
                 Updater.Create();
             }
-            else
-            {
-                Updater.Destroy();
-                HttpServer.Destroy();
-                harmony.UnpatchAll(modEntry.Info.Id);
-            }
             return true;
         }
 
         private static bool OnUnload(UnityModManager.ModEntry modEntry)
         {
-            return OnToggle(modEntry, false);
+            Harmony harmony = new Harmony(modEntry.Info.Id);
+            Updater.Destroy();
+            HttpServer.Destroy();
+            harmony.UnpatchAll(modEntry.Info.Id);
+            return true;
         }
 
         public static void DebugLog(TrainCar car, Func<string> message)
