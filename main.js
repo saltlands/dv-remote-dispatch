@@ -184,6 +184,11 @@ function jobElems(jobId, jobData) {
             }
         }
     }
+    if (onlyActiveJobs.checked) {
+        if (!jobData.startTime) {
+            return rows;
+        }
+    }
 
     let row = document.createElement('tr');
     const jobIdCell = document.createElement('th');
@@ -212,6 +217,24 @@ function jobElems(jobId, jobData) {
         }
     }
     row.appendChild(jobPayoutCell);
+    rows.push(row);
+
+    // Train weight
+    row = document.createElement('tr');
+    const jobWeightCell = document.createElement('th');
+    jobWeightCell.innerText = Math.floor(jobData.trainWeight / 1000) + " t";
+    row.appendChild(jobWeightCell);
+
+    // Train length
+    const jobLengthCell = document.createElement('th');
+    jobLengthCell.innerText = Math.round(jobData.trainLength) + " m";
+    row.appendChild(jobLengthCell);
+
+    // Number of cars
+    const jobCarsCell = document.createElement('th');
+    jobCarsCell.innerText = jobData.trainCars + " cars";
+    row.appendChild(jobCarsCell);
+
     rows.push(row);
 
     jobData.tasks.forEach(task => {
@@ -318,6 +341,7 @@ function refreshJobTimers() {
 const playerLicenses = new Map();
 
 const onlyActiveLicenses = document.getElementById('onlyActiveLicenses');
+const onlyActiveJobs= document.getElementById('onlyActiveJobs');
 const licenseList = document.getElementById('licenseList');
 const destinationList = document.getElementById('destinationList');
 const jobTypeList = document.getElementById('jobTypeList');

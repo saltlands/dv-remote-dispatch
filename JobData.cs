@@ -90,7 +90,10 @@ namespace DvMod.RemoteDispatch
                 new JProperty("bonusPayment", job.GetBonusPaymentForTheJob()),
                 new JProperty("bonusTime", job.TimeLimit),
                 new JProperty("startTime", job.startTime),
-                new JProperty("elapsedTime", job.GetTimeOnJob())
+                new JProperty("elapsedTime", job.GetTimeOnJob()),
+                new JProperty("trainWeight", FlattenMany(job.GetJobData()).Sum(j => j.cars == null ? 0 : j.cars.Sum(c => c.carOnlyMass + CargoTypes.cargoTypeToCargoMassPerUnit[c.CurrentCargoTypeInCar])) / (job.jobType == JobType.ShuntingLoad || job.jobType == JobType.ShuntingUnload ? 2 : 1)),
+                new JProperty("trainLength", FlattenMany(job.GetJobData()).Sum(j => j.cars == null ? 0 : j.cars.Sum(c => c.length)) / (job.jobType == JobType.ShuntingLoad || job.jobType == JobType.ShuntingUnload ? 2 : 1)),
+                new JProperty("trainCars", FlattenMany(job.GetJobData()).Sum(j => j.cars == null ? 0 : j.cars.Count()) / (job.jobType == JobType.ShuntingLoad || job.jobType == JobType.ShuntingUnload ? 2 : 1))
             );
 
             // ensure cache is updated
