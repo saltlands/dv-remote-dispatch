@@ -76,6 +76,22 @@ namespace DvMod.RemoteDispatch
                 }
             }
             static IEnumerable<TaskData> FlattenMany(IEnumerable<TaskData> data) => data.SelectMany(FlattenToTransport);
+
+            // ShuntingLoad has its mass only on the last task. Everything else has mass on the first task.
+            static TaskData GetRelevantTask(Job job) => (job.jobType == JobType.ShuntingLoad) ? FlattenMany(job.GetJobData()).Last() : FlattenMany(job.GetJobData()).First();
+            static float GetTaskMass(TaskData task)
+            {
+                if (task.cargoTypePerCar == null)
+                {
+                    return task.cars.Sum(c => c.carOnlyMass);
+                }
+                float mass = 0;
+                for (int i = 0; i < task.cars.Count(); i++)
+                {
+                    mass += task.cars[i].carOnlyMass + CargoTypes.cargoTypeToCargoMassPerUnit[task.cargoTypePerCar[i]];
+                }
+                return mass;
+            }
             static JObject TaskToJson(TaskData data) => new JObject(
                 new JProperty("startTrack", data.startTrack?.ID?.FullDisplayID),
                 new JProperty("destinationTrack", data.destinationTrack?.ID?.FullDisplayID),
@@ -91,9 +107,9 @@ namespace DvMod.RemoteDispatch
                 new JProperty("bonusTime", job.TimeLimit),
                 new JProperty("startTime", job.startTime),
                 new JProperty("elapsedTime", job.GetTimeOnJob()),
-                new JProperty("trainWeight", FlattenMany(job.GetJobData()).Sum(j => j.cars == null ? 0 : j.cars.Sum(c => c.carOnlyMass + CargoTypes.cargoTypeToCargoMassPerUnit[c.CurrentCargoTypeInCar])) / (job.jobType == JobType.ShuntingLoad || job.jobType == JobType.ShuntingUnload ? 2 : 1)),
-                new JProperty("trainLength", FlattenMany(job.GetJobData()).Sum(j => j.cars == null ? 0 : j.cars.Sum(c => c.length)) / (job.jobType == JobType.ShuntingLoad || job.jobType == JobType.ShuntingUnload ? 2 : 1)),
-                new JProperty("trainCars", FlattenMany(job.GetJobData()).Sum(j => j.cars == null ? 0 : j.cars.Count()) / (job.jobType == JobType.ShuntingLoad || job.jobType == JobType.ShuntingUnload ? 2 : 1))
+                new JProperty("trainWeight", GetTaskMass(GetRelevantTask(job))),
+                new JProperty("trainLength", GetRelevantTask(job).cars.Sum(c => c.length)),
+                new JProperty("trainCars", GetRelevantTask(job).cars.Count())
             );
 
             // ensure cache is updated
