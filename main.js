@@ -13,8 +13,7 @@ const map = L.map('map', {
     maxZoom: 21,
     maxBounds: maxBounds,
     tap: false,
-    zoomControl: false,
-    layers: L.tileLayer("/map.{x},{y}.png", { tileSize: 1024, bounds: [[0, 0], [0.15, 0.15]], maxNativeZoom: 16 }),
+    zoomControl: false
 })
     .fitBounds(mapBounds);
 L.control.scale().addTo(map);
