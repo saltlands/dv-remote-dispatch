@@ -111,6 +111,9 @@ namespace DvMod.RemoteDispatch
                 case "job":
                     Render200(args, contentTypes["json"], JobData.GetAllJobDataJson());
                     break;
+                case "licenses":
+                    Render200(args, contentTypes["json"], LicenseData.GetLicenseDataJson());
+                    break;
                 case "junction":
                     Render200(args, contentTypes["json"], Junctions.GetJunctionPointJSON());
                     break;

@@ -197,6 +197,7 @@ function jobElems(jobId, jobData) {
     jobIdCell.style.background = colorForJobId(jobId);
     let jobClass = jobData.startTime ? 'jobTaken' : '';
     jobIdCell.innerHTML = `<span class="${jobClass}">${jobId}</span>`;
+    // Icons for licenses required
     for (var idx in jobData.licenses) {
         let name = jobData.licenses[idx];
         jobIdCell.innerHTML += ` <img src="licenses.${name}.png" title="${name}" height=24 />`;
@@ -204,6 +205,7 @@ function jobElems(jobId, jobData) {
     row.appendChild(jobIdCell);
     rows.push(row);
 
+    // Payout and time bonus
     row = document.createElement('tr');
     const jobPayoutCell = document.createElement('th');
     jobPayoutCell.setAttribute('colspan', CarsPerRow);
@@ -349,6 +351,15 @@ function updateFilterList() {
     let licenses = new Array();
     playerLicenses.forEach((active, license) => licenses.push(`<img src="licenses.${license}.png" class="${active ? "license-active" : "license-inactive"}" />`));
     licenseList.innerHTML = licenses.join(" ");
+}
+
+function updatePlayerLicenses(licenses) {
+    playerLicenses.clear();
+    for (var license in licenses) {
+        playerLicenses.set(license, licenses[license]);
+    }
+    // Refresh the list of licenses in the active license filter (highlights the owned ones).
+    updateFilterList();
 }
 
 /////////////////////
@@ -582,13 +593,6 @@ function createPlayerMarker(playerData) {
     )
         .addEventListener('click', e => setMarkerToFollow(e.target))
         .addTo(map);
-    if (playerData.licenses) {
-        playerLicenses.clear();
-        for (var license in playerData.licenses) {
-            playerLicenses.set(license, playerData.licenses[license]);
-        }
-        updateFilterList();
-    }
     updatePlayerOverlay(playerData);
 }
 
@@ -605,6 +609,10 @@ fetch('/player')
         createPlayerMarker(playerData);
         map.setView(playerData.position, initialZoom)
     });
+
+fetch('/licenses')
+    .then(resp => resp.json())
+    .then(licenses => updatePlayerLicenses(licenses));
 
 /////////////////////
 // cars
@@ -773,6 +781,9 @@ function updateOnce(updateData) {
                 break;
             case 'jobs':
                 updateAllJobs(data);
+                break;
+            case 'licenses':
+                updatePlayerLicenses(data);
                 break;
             case 'junctions':
                 updateAllJunctions(data);
